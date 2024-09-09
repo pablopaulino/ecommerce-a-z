@@ -1,37 +1,38 @@
-import { createContext, useEffect, useState } from 'react'
-import ItemCarrinho from '../model/ItemCarrinho'
-import Produto from '../model/Produto'
-import useLocalStorage from '../hooks/useLocalStorage'
+import { createContext, useEffect, useState } from 'react';
+import ItemCarrinho from '../model/ItemCarrinho';
+import Produto from '../model/Produto';
+import useLocalStorage from '../hooks/useLocalStorage';
 
 interface ContextoCarrinhoProps {
-    itens: ItemCarrinho[]
-    qtdeDeItens: number
-    adicionar: (item: Produto) => void
-    remover: (item: Produto) => void
+    itens: ItemCarrinho[];
+    qtdeDeItens: number;
+    adicionar: (item: Produto) => void;
+    remover: (item: Produto) => void;
+    limpar: () => void;  
 }
 
-const ContextoCarrinho = createContext<ContextoCarrinhoProps>({} as any)
+const ContextoCarrinho = createContext<ContextoCarrinhoProps>({} as any);
 
 export function ProvedorCarrinho(props: any) {
-    const [itens, setItens] = useState<ItemCarrinho[]>([])
-    const { set, get } = useLocalStorage()
+    const [itens, setItens] = useState<ItemCarrinho[]>([]);
+    const { set, get } = useLocalStorage();
 
     useEffect(() => {
-        const carrinho = get('carrinho')
+        const carrinho = get('carrinho');
         if (carrinho) {
-            setItens(carrinho)
+            setItens(carrinho);
         }
-    }, [get])
+    }, [get]);
 
     function adicionar(produto: Produto) {
-        const indice = itens.findIndex((i) => i.produto.id === produto.id)
+        const indice = itens.findIndex((i) => i.produto.id === produto.id);
 
         if (indice === -1) {
-            alterarItens([...itens, { produto, quantidade: 1 }])
+            alterarItens([...itens, { produto, quantidade: 1 }]);
         } else {
-            const novosItens = [...itens]
-            novosItens[indice].quantidade++
-            alterarItens(novosItens)
+            const novosItens = [...itens];
+            novosItens[indice].quantidade++;
+            alterarItens(novosItens);
         }
     }
 
@@ -39,17 +40,21 @@ export function ProvedorCarrinho(props: any) {
         const novosItens = itens
             .map((i) => {
                 if (i.produto.id === produto.id) {
-                    i.quantidade--
+                    i.quantidade--;
                 }
-                return i
+                return i;
             })
-            .filter((i) => i.quantidade > 0)
-        alterarItens(novosItens)
+            .filter((i) => i.quantidade > 0);
+        alterarItens(novosItens);
+    }
+
+    function limpar() {  
+        alterarItens([]);  
     }
 
     function alterarItens(novosItens: ItemCarrinho[]) {
-        setItens(novosItens)
-        set('carrinho', novosItens)
+        setItens(novosItens);
+        set('carrinho', novosItens);
     }
 
     return (
@@ -58,14 +63,15 @@ export function ProvedorCarrinho(props: any) {
                 itens,
                 adicionar,
                 remover,
+                limpar,  
                 get qtdeDeItens() {
-                    return itens.reduce((total, item) => total + item.quantidade, 0)
+                    return itens.reduce((total, item) => total + item.quantidade, 0);
                 },
             }}
         >
             {props.children}
         </ContextoCarrinho.Provider>
-    )
+    );
 }
 
-export default ContextoCarrinho
+export default ContextoCarrinho;
